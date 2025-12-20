@@ -4,7 +4,9 @@ import { useState } from "react";
 
 export default function ChatBox() {
   const [message, setMessage] = useState("");
-  const [response, setResponse] = useState<string>("");
+  const [messages, setMessages] = useState<
+    { role: "user" | "assistant"; content: string }[]
+  >([]);
   const [loading, setLoading] = useState(false);
 
   const examples = [
@@ -17,39 +19,71 @@ export default function ChatBox() {
   if (!message.trim()) return;
 
   setLoading(true);
-  try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message }),
+try {
+  // 0) Block empty sends
+  if (!message.trim()) return;
+
+  // 1) Add USER message immediately
+  setMessages((prev) => [...prev, { role: "user", content: message }]);
+
+  // 2) Clear input for better UX
+  setMessage("");
+
+  // 3) Start loading
+  setLoading(true);
+
+  // 4) Add ASSISTANT placeholder (we will stream into this)
+  setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message }),
+  });
+
+  const reader = res.body?.getReader();
+  if (!reader) {
+    // Replace last assistant message
+    setMessages((prev) => {
+      const copy = [...prev];
+      copy[copy.length - 1] = {
+        role: "assistant",
+        content: "No response stream.",
+      };
+      return copy;
     });
-
-    const reader = res.body?.getReader();
-if (!reader) {
-  setResponse("No response stream.");
-  setLoading(false);
-  return;
-}
-
-const decoder = new TextDecoder();
-let result = "";
-
-while (true) {
-  const { value, done } = await reader.read();
-  if (done) break;
-  result += decoder.decode(value);
-  setResponse(result);
-}
-
-  } catch (e) {
-    setResponse("Error: could not reach server.");
-  } finally {
-    setLoading(false);
+    return;
   }
+
+  const decoder = new TextDecoder();
+  let result = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    result += decoder.decode(value);
+
+    // Update ONLY the last assistant message while streaming
+    setMessages((prev) => {
+      const copy = [...prev];
+      copy[copy.length - 1] = { role: "assistant", content: result };
+      return copy;
+    });
+  }
+} catch (e) {
+  setMessages((prev) => [
+    ...prev,
+    { role: "assistant", content: "Error: could not reach server." },
+  ]);
+} finally {
+  setLoading(false);
+}
+
 }
 
 return (
-  <section className="mt-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+  <section id="chat" className="mt-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
     <h2 className="text-base font-semibold text-gray-900">Ask the AI</h2>
    <div className="mt-3 flex flex-wrap gap-2">
   {examples.map((text) => (
@@ -87,10 +121,26 @@ return (
 
     <div className="mt-4 rounded-xl bg-gray-50 p-4">
     
-    <div className="text-xs text-gray-500">Response</div>
-    <div className="mt-1 whitespace-pre-wrap text-sm text-gray-800">
-        {response ? response : "AI will answer here…"}
-    </div>
+      <div className="mt-4 space-y-3">
+        {messages.length === 0 ? (
+          <div className="text-sm text-gray-500">
+            Ask something above to start the conversation.
+          </div>
+        ) : (
+          messages.map((m, idx) => (
+            <div
+              key={idx}
+              className={
+                m.role === "user"
+                  ? "ml-auto w-fit max-w-[85%] rounded-2xl bg-gray-900 px-4 py-2 text-sm text-white"
+                  : "mr-auto w-fit max-w-[85%] rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-900"
+              }
+            >
+              {m.content}
+            </div>
+          ))
+        )}
+      </div>
 
     </div>
   </section>
