@@ -1,14 +1,23 @@
 "use client";
+import { useState, useEffect } from "react";
 
-import { useState } from "react";
+export default function ChatBox({
+  messages,
+  setMessages,
+  resetKey,
+}: {
+  messages: { role: "user" | "assistant"; content: string }[];
+  setMessages: React.Dispatch<
+    React.SetStateAction<{ role: "user" | "assistant"; content: string }[]>
+  >;
+  resetKey: number;
+}) {
 
-export default function ChatBox() {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<
-    { role: "user" | "assistant"; content: string }[]
-  >([]);
+  useEffect(() => {
+  setMessage("");
+}, [resetKey]);
   const [loading, setLoading] = useState(false);
-
   const examples = [
   "Write a short bio for my Upwork profile",
   "Summarize this paragraph in 3 bullet points",
@@ -83,27 +92,14 @@ try {
 
 }
 
-function handleNewChat() {
-  setMessages([]);
-  setMessage("");
-}
-
 return (
   <section id="chat" className="mt-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
     <div className="flex items-center justify-between">
-  <h2 className="text-base font-semibold text-gray-900">Ask the AI</h2>
-
-  <button
-    type="button"
-    onClick={handleNewChat}
-    className="text-x font-semibold text-gray-600 hover:text-gray-900"
-  >
-    New chat
-  </button>
-</div>
+      <h2 className="text-base font-semibold text-gray-900">Ask the AI</h2>
+    </div>
 
    <div className="mt-3 flex flex-wrap gap-2">
-  {examples.map((text) => (
+    {examples.map((text) => (
     <button
       key={text}
       type="button"
@@ -112,24 +108,32 @@ return (
     >
       {text}
     </button>
-  ))}
-</div>
+    ))}
+    </div>
 
     <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
-      <input
+      <textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        placeholder="Type your question…"
-        className="w-full rounded-xl border border-gray-300 px-3 py-1 text-sm outline-none focus:border-gray-900"
-      />
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+          }
+        }}
+        placeholder="Type your question… (Enter to send, Shift+Enter for a new line)"
+        rows={2}
+        className="w-full resize-none rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-gray-900"
+      ></textarea>
 
       <button
         onClick={handleSend}
-        disabled={loading}
-        className="rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-3 py-1 text-sm font-medium text-white shadow-sm hover:opacity-95 disabled:opacity-60"
+        disabled={loading || !message.trim()}
+        className="rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-5 py-3 text-sm font-medium text-white shadow-sm hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? "Sending..." : "Send"}
       </button>
+
     </div>
 
     <p className="mt-2 text-xs text-gray-500">
