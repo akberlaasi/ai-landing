@@ -91,7 +91,7 @@ return (
       key={text}
       type="button"
       onClick={() => setMessage(text)}
-      className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700 hover:border-gray-900"
+      className="rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-3 py-1 text-sm font-medium text-white shadow-sm hover:opacity-95 disabled:opacity-60"
     >
       {text}
     </button>
@@ -103,13 +103,13 @@ return (
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Type your question…"
-        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm outline-none focus:border-gray-900"
+        className="w-full rounded-xl border border-gray-300 px-3 py-1 text-sm outline-none focus:border-gray-900"
       />
 
       <button
         onClick={handleSend}
         disabled={loading}
-        className="rounded-xl bg-gray-900 px-5 py-3 text-sm font-medium text-white disabled:opacity-60"
+        className="rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-3 py-1 text-sm font-medium text-white shadow-sm hover:opacity-95 disabled:opacity-60"
       >
         {loading ? "Sending..." : "Send"}
       </button>
@@ -132,8 +132,8 @@ return (
               key={idx}
               className={
                 m.role === "user"
-                  ? "ml-auto w-fit max-w-[85%] rounded-2xl bg-gray-900 px-4 py-2 text-sm text-white"
-                  : "mr-auto w-fit max-w-[85%] rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-900"
+                  ? "ml-auto w-fit max-w-[85%] rounded-2xl bg-gray-900 px-4 py-2 text-sm text-white whitespace-pre-wrap"
+                  : "mr-auto w-fit max-w-[85%] rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-900 whitespace-pre-wrap"
               }
             >
               {m.content}
