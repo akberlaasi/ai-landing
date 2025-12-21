@@ -16,6 +16,7 @@ export default function ChatBox() {
 ];
 
   async function handleSend() {
+      
   if (!message.trim()) return;
 
   setLoading(true);
@@ -82,9 +83,25 @@ try {
 
 }
 
+function handleNewChat() {
+  setMessages([]);
+  setMessage("");
+}
+
 return (
   <section id="chat" className="mt-8 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-    <h2 className="text-base font-semibold text-gray-900">Ask the AI</h2>
+    <div className="flex items-center justify-between">
+  <h2 className="text-base font-semibold text-gray-900">Ask the AI</h2>
+
+  <button
+    type="button"
+    onClick={handleNewChat}
+    className="text-x font-semibold text-gray-600 hover:text-gray-900"
+  >
+    New chat
+  </button>
+</div>
+
    <div className="mt-3 flex flex-wrap gap-2">
   {examples.map((text) => (
     <button
@@ -141,6 +158,16 @@ return (
           ))
         )}
       </div>
+      
+      <div className="mt-4 space-y-3">
+  ...
+</div>
+
+{loading ? (
+  <div className="mt-3 mr-auto w-fit max-w-[85%] rounded-2xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-500">
+    Typing…
+  </div>
+) : null}
 
     </div>
   </section>
